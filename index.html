@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Connect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <script src="https://meet.jit.si/external_api.js"></script>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js"
+    }
+  }
+  </script>
+
+  </head>
+<body> <header>
+    <nav class="container">
+      <a href="#home" class="logo">Student Connect</a>
+      <button id="menu-toggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul id="nav-menu">
+        <li><a href="#home"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="#random-meeting"><i class="fas fa-random"></i> Random Meeting</a></li>
+        <li><a href="#invite-meeting"><i class="fas fa-user-plus"></i> Invite Meeting</a></li>
+        <li><a href="#video-call"><i class="fas fa-video"></i> Video Call</a></li>
+        <li><a href="#announcements"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+        <li><a href="#about"><i class="fas fa-info-circle"></i> About</a></li>
+        <li id="auth-nav-item">
+          <a href="#login" class="login-button" id="login-nav-link"><i class="fas fa-sign-in-alt"></i> Login</a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="home" class="section container active">
+    <h1>Welcome to Student Connect</h1>
+    <p class="subtitle">Connecting students from different backgrounds to help them solve questions and socialize.</p>
+    <div class="features">
+      <div class="feature" data-section="random-meeting">
+        <img src="students.jpg" alt="Students in a group discussion" loading="lazy">
+        <h2><i class="fas fa-random"></i> Random Meeting Generator</h2>
+        <p>Join spontaneous study sessions with peers.</p>
+      </div>
+      <div class="feature" data-section="invite-meeting">
+         <img src="join-meet.webp" alt="Friends studying together" loading="lazy">
+        <h2><i class="fas fa-user-plus"></i> Invite a Friend</h2>
+        <p>Set up private study groups with friends.</p>
+      </div>
+      <div class="feature" data-section="announcements">
+         <img src="board.webp" alt="Bulletin board with announcements" loading="lazy">
+        <h2><i class="fas fa-bullhorn"></i> Announcements</h2>
+        <p>Stay updated on the latest questions and discussions.</p>
+      </div>
+    </div>
+  </main>
+
+  <main id="random-meeting" class="section container">
+    <h1>Random Meeting Generator</h1>
+    <p class="subtitle">Post your question to join a random meeting with other students.</p>
+    <div class="meeting-generator">
+      <input type="text" id="random-question" placeholder="Enter your question" aria-label="Enter your question">
+      <select id="department-select">
+        <option value="computer-science">Computer Science</option>
+        <option value="mechanical">Mechanical</option>
+        <option value="electrical">Electrical</option>
+        <option value="civil">Civil</option>
+      </select>
+      <button id="post-question"><i class="fas fa-paper-plane"></i> Post Question</button>
+      <div id="auth-warning" class="auth-warning hidden">
+        <p><i class="fas fa-exclamation-circle"></i> Please login to post a question</p>
+      </div>
+    </div>
+  </main>
+
+  <main id="video-call" class="section container">
+    <h1>Video Call</h1>
+    <div id="jitsi-container"></div>
+    <div class="chat-container">
+      <div id="chat-messages" class="chat-messages"></div>
+      <div class="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Type your message..." aria-label="Type your message">
+        <button id="send-chat"><i class="fas fa-paper-plane"></i> Send</button>
+      </div>
+    </div>
+  </main>
+
+  <main id="announcements" class="section container">
+    <h1>Announcements</h1>
+    <div class="filter-buttons">
+      <button class="filter-button active" data-filter="all">All</button>
+      <button class="filter-button" data-filter="computer-science">Computer Science</button>
+      <button class="filter-button" data-filter="mechanical">Mechanical</button>
+      <button class="filter-button" data-filter="electrical">Electrical</button>
+      <button class="filter-button" data-filter="civil">Civil</button>
+    </div>
+    <div id="announcements-list"></div>
+  </main>
+
+  <main id="invite-meeting" class="section container">
+    <h1>Invite Meeting Generator</h1>
+    <p class="subtitle">Invite your friends to a meeting.</p>
+    <div class="meeting-generator">
+      <input type="text" id="invite-email" placeholder="Enter email addresses (comma-separated)" aria-label="Enter email addresses">
+      <button id="generate-invite-meeting"><i class="fas fa-envelope"></i> Send Invites</button>
+      <div id="invite-auth-warning" class="auth-warning hidden">
+        <p><i class="fas fa-exclamation-circle"></i> Please login to invite friends</p>
+      </div>
+      <div id="invite-link-container" class="hidden">
+        <p>Share this link with your friends:</p>
+        <div class="invite-link">
+          <input type="text" id="invite-link" readonly>
+          <button id="copy-invite-link"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <main id="about" class="section container">
+    <h1>About Student Connect</h1>
+    <div class="about-content">
+      <p>Student Connect is an innovative platform designed to revolutionize the way students interact, learn, and socialize in the digital age. Our mission is to create a vibrant, inclusive community where knowledge sharing and peer support thrive.</p>
+      <img src="team.webp" alt="Students collaborating on a project" class="about-image" loading="lazy">
+      <h2>Our Vision</h2>
+      <p>We envision a world where every student has access to a global network of peers, breaking down geographical barriers and fostering cross-cultural understanding. Through our platform, we aim to:</p>
+      <ul>
+        <li>Facilitate spontaneous learning opportunities</li>
+        <li>Encourage collaborative problem-solving</li>
+        <li>Promote diverse perspectives in academic discussions</li>
+        <li>Build a supportive community for students worldwide</li>
+      </ul>
+    </div>
+  </main>
+
+  <main id="login" class="section container">
+    <h1 id="auth-title">Login</h1>
+    <div class="auth-toggle">
+      <button id="login-toggle" class="auth-toggle-btn active">Login</button>
+      <button id="register-toggle" class="auth-toggle-btn">Register</button>
+    </div>
+    <div class="login-container">
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email:</label>
+          <input type="email" id="login-email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password:</label>
+          <input type="password" id="login-password" name="password" required>
+        </div>
+        <div id="login-error" class="error-message hidden"></div>
+        <button type="submit" class="primary-button">Login</button>
+      </form>
+
+      <form id="register-form" class="hidden">
+        <div class="form-group">
+          <label for="register-name">Full Name:</label>
+          <input type="text" id="register-name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label for="register-email">Email:</label>
+          <input type="email" id="register-email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="register-password">Password:</label>
+          <input type="password" id="register-password" name="password" required>
+          <small>Password must be at least 6 characters</small>
+        </div>
+        <div class="form-group">
+          <label for="register-department">Department:</label>
+          <select id="register-department" name="department" required>
+            <option value="">Select your department</option>
+            <option value="computer-science">Computer Science</option>
+            <option value="mechanical">Mechanical</option>
+            <option value="electrical">Electrical</option>
+            <option value="civil">Civil</option>
+          </select>
+        </div>
+        <div id="register-error" class="error-message hidden"></div>
+        <button type="submit" class="primary-button">Register</button>
+      </form>
+    </div>
+  </main>
+
+  <main id="profile" class="section container">
+    <h1>My Profile</h1>
+    <div class="profile-container">
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <div class="profile-info">
+          <h2 id="profile-name"></h2>
+          <p id="profile-email"></p>
+          <p id="profile-department"></p>
+        </div>
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat-card">
+          <i class="fas fa-question-circle"></i>
+          <h3>Questions Posted</h3>
+          <p id="questions-count">0</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-video"></i>
+          <h3>Meetings Joined</h3>
+          <p id="meetings-count">0</p>
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button id="logout-button" class="danger-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast hidden">
+    <div class="toast-content">
+      <i id="toast-icon" class="fas"></i>
+      <p id="toast-message"></p>
+    </div>
+    <button id="toast-close"><i class="fas fa-times"></i></button>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Student Connect</p> <nav>
+        <a href="#privacy">Privacy Policy</a>
+        <a href="#terms">Terms of Service</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script type="module" src="scripts.js"></script>
+
+  </body> </html>
